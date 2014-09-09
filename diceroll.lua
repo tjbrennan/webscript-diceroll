@@ -1,14 +1,33 @@
 -- dice roll script
 -- formatted to receive and respond to outgoing webhooks on slack
+-- may execute via cli for testing
 
-local default = "2d6"
-local inText = request and request.form.text or ""
+
+local default = "1d20"
+local inText = default
 local outText = ""
 local parsed = {}
 local dice
 local sides
 local roll
 local sum = 0
+
+
+-- slack stuff
+local form = request and request.form
+local trigger
+local user = ""
+
+local bot = {
+  username = "dicebot",
+  icon_emoji = ":game_die:",
+} 
+
+if form then
+  trigger = form.trigger_word
+  user = form.user_name
+  inText = form.text:gsub(trigger, ""):gsub("^%s*(.-)%s*$", "%1")
+end
 
 math.randomseed(os.time())
 
@@ -33,10 +52,14 @@ else
   for i=1, dice do
     roll = math.random(1, sides)
     sum = sum + roll
-    outText = outText .. roll .. ((i == dice) and " = " or " + ")
+    outText = outText .. roll .. ((i == dice) and "" or " + ")
   end
-  outText = outText .. sum
+  if dice > 1 then
+    outText = outText .. " = " .. sum
+  end
 end
 
+bot.text = user .. " rolled " .. inText .. ": \n>" .. outText
+
 print(outText)
-return({ text = outText })
+return(bot)
