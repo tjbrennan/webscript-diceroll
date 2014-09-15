@@ -2,6 +2,7 @@
 -- formatted to receive and respond to outgoing webhooks on slack
 -- may execute via cli for testing
 
+math.randomseed(os.time())
 
 local default = "1d20"
 local inText = default
@@ -23,18 +24,18 @@ local bot = {
   icon_emoji = ":game_die:",
 } 
 
+-- remove trigger word from input text and trim
 if form then
   trigger = form.trigger_word
   user = form.user_name
   inText = form.text:gsub(trigger, ""):gsub("^%s*(.-)%s*$", "%1")
 end
 
-math.randomseed(os.time())
-
 if inText == "" then
   inText = default
 end
 
+-- get dice and sides from input text
 for i in inText:gmatch("%d+") do
   table.insert(parsed, i)
 end
@@ -59,6 +60,7 @@ else
   end
 end
 
+-- format bot output text
 bot.text = user .. " rolled " .. inText .. ": \n>" .. outText
 
 print(outText)
